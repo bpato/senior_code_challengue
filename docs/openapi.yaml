@@ -1,0 +1,776 @@
+openapi: 3.0.4
+info:
+  title: Cart & Checkout Challenge - OpenAPI 3.0
+  description: |-
+    Pequeño ejercico de una api que gestiona carritos y genera pedidos aplicando arquitectura hexagonal con diseño DDD y CQRS
+  version: 1.0.0
+servers:
+  - url: https://localhost
+tags:
+  - name: cart
+    description: Everything about carts
+  - name: checkout
+    description: Access to purchases  orders
+paths:
+  /api/cart:
+    post:
+      summary: Crear un carrito
+      responses:
+        '200':
+          description: Carrito obtenido con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cart:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        description: Identificador único del carrito en formato UUID
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            product_id:
+                              type: number
+                              format: integer
+                              description: Id del producto
+                            quantity:
+                              type: number
+                              format: integer
+                              description: Cantidad de árticulos del producto
+                            name:
+                              type: string
+                              description: Nombre del producto
+                            unit_price:
+                              type: number
+                              format: float
+                              description: Precio unitario del producto
+                            price:
+                              type: number
+                              format: float
+                              description: Precio total del producto
+                        example: []
+                      total_items:
+                        type: number
+                        format: integer
+                      total_price:
+                        type: number
+                        format: float
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      example:
+                        example: "This value should not be blank."
+        '404':
+          description: Error no se encuentra el recurso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Entity not found."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Internal server error."
+
+      tags:
+        - cart
+    get:
+      summary: Obtener carrito
+      parameters:
+        - in: header
+          name: X-Cart-Id
+          required: true
+          schema:
+            type: string
+          description: Identificador del carrito
+      responses:
+        '200':
+          description: Carrito obtenido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cart:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        description: Identificador único del carrito en formato UUID
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            product_id:
+                              type: number
+                              format: integer
+                              description: Id del producto
+                            quantity:
+                              type: number
+                              format: integer
+                              description: Cantidad de árticulos del producto
+                            name:
+                              type: string
+                              description: Nombre del producto
+                            unit_price:
+                              type: number
+                              format: float
+                              description: Precio unitario del producto
+                            price:
+                              type: number
+                              format: float
+                              description: Precio total del producto
+                        example: []
+                      total_items:
+                        type: number
+                        format: integer
+                      total_price:
+                        type: number
+                        format: float
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      example:
+                        example: "This value should not be blank."
+        '404':
+          description: Error no se encuentra el recurso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Entity not found."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Internal server error."
+      tags:
+        - cart
+    delete:
+      summary: Vacíar el carrito
+      parameters:
+        - in: header
+          name: X-Cart-Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Identificador único del carrito en formato UUID
+      responses:
+        '200':
+          description: Artículos eliminados del carrito con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cart:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        description: Identificador único del carrito en formato UUID
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            product_id:
+                              type: number
+                              format: integer
+                              description: Id del producto
+                            quantity:
+                              type: number
+                              format: integer
+                              description: Cantidad de árticulos del producto
+                            name:
+                              type: string
+                              description: Nombre del producto
+                            unit_price:
+                              type: number
+                              format: float
+                              description: Precio unitario del producto
+                            price:
+                              type: number
+                              format: float
+                              description: Precio total del producto
+                        example: []
+                      total_items:
+                        type: number
+                        format: integer
+                      total_price:
+                        type: number
+                        format: float
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      example:
+                        example: "This value should not be blank."
+        '404':
+          description: Error no se encuentra el recurso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Entity not found."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Internal server error."
+      tags:
+        - cart
+  /api/cart/items:
+    post:
+      summary: Obtener carrito
+      parameters:
+        - in: header
+          name: X-Cart-Id
+          required: true
+          schema:
+            type: string
+          description: Identificador del carrito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_id:
+                  type: number
+                  format: integer
+                  description: Id del producto
+                quantity:
+                  type: number
+                  format: integer
+                  description: Cantidad de árticulos del producto
+      responses:
+        '200':
+          description: Carrito obtenido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cart:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        description: Identificador único del carrito en formato UUID
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            product_id:
+                              type: number
+                              format: integer
+                              description: Id del producto
+                            quantity:
+                              type: number
+                              format: integer
+                              description: Cantidad de árticulos del producto
+                            name:
+                              type: string
+                              description: Nombre del producto
+                            unit_price:
+                              type: number
+                              format: float
+                              description: Precio unitario del producto
+                            price:
+                              type: number
+                              format: float
+                              description: Precio total del producto
+                      total_items:
+                        type: number
+                        format: integer
+                      total_price:
+                        type: number
+                        format: float
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      example:
+                        example: "This value should not be blank."
+        '404':
+          description: Error no se encuentra el recurso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Entity not found."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Internal server error."
+      tags:
+        - cart
+  /api/cart/items/{product_id}:
+    patch:
+      summary: Eliminar un item del carrito
+      parameters:
+        - in: path
+          name: product_id
+          schema:
+            type: string
+          required: true
+          description: ID del product
+        - in: header
+          name: X-Cart-Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Identificador único del carrito en formato UUID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: number
+                  format: integer
+                  description: Cantidad de árticulos del producto
+      responses:
+        '200':
+          description: Item eliminado del carrito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cart:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        description: Identificador único del carrito en formato UUID
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            product_id:
+                              type: number
+                              format: integer
+                              description: Id del producto
+                            quantity:
+                              type: number
+                              format: integer
+                              description: Cantidad de árticulos del producto
+                            name:
+                              type: string
+                              description: Nombre del producto
+                            unit_price:
+                              type: number
+                              format: float
+                              description: Precio unitario del producto
+                            price:
+                              type: number
+                              format: float
+                              description: Precio total del producto
+                      total_items:
+                        type: number
+                        format: integer
+                      total_price:
+                        type: number
+                        format: float
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      example:
+                        example: "This value should not be blank."
+        '404':
+          description: Error no se encuentra el recurso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Entity not found."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Internal server error."
+      tags:
+        - cart
+    delete:
+      summary: Eliminar un item del carrito
+      parameters:
+        - in: path
+          name: product_id
+          schema:
+            type: string
+          required: true
+          description: ID del product
+        - in: header
+          name: X-Cart-Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Identificador único del carrito en formato UUID
+      responses:
+        '200':
+          description: Item eliminado del carrito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cart:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        description: Identificador único del carrito en formato UUID
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            product_id:
+                              type: number
+                              format: integer
+                              description: Id del producto
+                            quantity:
+                              type: number
+                              format: integer
+                              description: Cantidad de árticulos del producto
+                            name:
+                              type: string
+                              description: Nombre del producto
+                            unit_price:
+                              type: number
+                              format: float
+                              description: Precio unitario del producto
+                            price:
+                              type: number
+                              format: float
+                              description: Precio total del producto
+                        example: []
+                      total_items:
+                        type: number
+                        format: integer
+                      total_price:
+                        type: number
+                        format: float
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      example:
+                        example: "This value should not be blank."
+        '404':
+          description: Error no se encuentra el recurso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Entity not found."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Internal server error."
+      tags:
+        - cart
+  /api/checkout:
+    post:
+      summary: Establecer un pedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cart_id:
+                  type: string
+                  format: uuid
+                  description: Identificador único del carrito en formato UUID
+                email:
+                  type: string
+                  format: email
+                  description: Email del customer
+      responses:
+        '200':
+          description: Carrito obtenido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        format: integer
+                      cart_reference:
+                        type: string
+                        format: uuid
+                        description: Identificador único del carrito en formato UUID
+                      email:
+                        type: string
+                        format: email
+                        description: Email del customer
+                      total_price:
+                        type: number
+                        format: float
+                      total_items:
+                        type: number
+                        format: integer
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: Fecha y hora en formato ISO 8601 con zona horaria
+                      products:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            product_id:
+                              type: number
+                              format: integer
+                              description: Id del producto
+                            name:
+                              type: string
+                              description: Nombre del producto
+                            unit_price:
+                              type: number
+                              format: float
+                              description: Precio unitario del producto
+                            total_price:
+                              type: number
+                              format: float
+                              description: Precio total del producto
+                            quantity:
+                              type: number
+                              format: integer
+                              description: Cantidad de árticulos del producto
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      example:
+                        example: "This value should not be blank."
+        '404':
+          description: Error no se encuentra el recurso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Entity not found."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Internal server error."
+      tags:
+        - checkout
+  /api/order/{order_id}:
+    get:
+      summary: Obtener pedido
+      parameters:
+        - in: path
+          name: order_id
+          schema:
+            type: string
+          required: true
+          description: ID del pedido
+      responses:
+        '200':
+          description: Carrito obtenido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        format: integer
+                      cart_reference:
+                        type: string
+                        format: uuid
+                        description: Identificador único del carrito en formato UUID
+                      email:
+                        type: string
+                        format: email
+                        description: Email del customer
+                      total_price:
+                        type: number
+                        format: float
+                      total_items:
+                        type: number
+                        format: integer
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: Fecha y hora en formato ISO 8601 con zona horaria
+                      products:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            product_id:
+                              type: number
+                              format: integer
+                              description: Id del producto
+                            name:
+                              type: string
+                              description: Nombre del producto
+                            unit_price:
+                              type: number
+                              format: float
+                              description: Precio unitario del producto
+                            total_price:
+                              type: number
+                              format: float
+                              description: Precio total del producto
+                            quantity:
+                              type: number
+                              format: integer
+                              description: Cantidad de árticulos del producto
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      example:
+                        example: "This value should not be blank."
+        '404':
+          description: Error no se encuentra el recurso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Entity not found."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    example: "Internal server error."
+      tags:
+        - checkout
