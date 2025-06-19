@@ -1,0 +1,62 @@
+version: "3.5"
+
+services:
+  application_nginx:
+    image: nginx:1.13
+    container_name: application_nginx
+    environment:
+      TZ: Europe/Madrid
+    volumes:
+      - ./:/var/www/app
+      - ./etc/docker/nginx/symfony.conf:/etc/nginx/conf.d/symfony.conf
+      - ./etc/docker/nginx/symfonyssl.conf:/etc/nginx/conf.d/symfonyssl.conf
+      - ./etc/docker/nginx/cert:/etc/nginx/cert
+    depends_on:
+      - application_php
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - app-network
+
+  application_php:
+    build: ./etc/docker/php-fpm
+    user: 1000:1000
+    container_name: application_php
+    environment:
+      TZ: Europe/Madrid
+    depends_on:
+      - application_db
+    ports:
+      - 9000:9000
+    volumes:
+      - ./:/var/www/app:cached
+      - ./etc/docker/php-fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
+    entrypoint: /var/www/app/etc/docker/php-fpm/run.sh
+    networks:
+      - app-network
+
+  application_db:
+    image: mysql:5.7
+#   Platform required for Apple Silicon/M1
+    platform: linux/x86_64
+    container_name: application_db
+    restart: always
+    environment:
+      TZ: Europe/Madrid
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: app
+      MYSQL_PASSWORD: "!ChangeMe!"
+      MYSQL_DATABASE: app
+    volumes:
+      - ./:/var/www/app:cached
+      - ./etc/docker/mysql/dump:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
