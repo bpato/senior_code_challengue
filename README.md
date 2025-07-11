@@ -1,4 +1,7 @@
 # Senior Code Challengue
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/bpato/senior_code_challengue)
+
+![Senior Code Challengue](https://github.com/bpato/senior_code_challengue/blob/master/senior_code_challengue.png?raw=true)
 
 ## Breve descripción del proyecto
 
